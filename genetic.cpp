@@ -1,4 +1,10 @@
+#include "stdafx.h"
 #include "genetic.h"
+
+int Genetic::getNew(int old)
+{
+	return old==0 ? M:0;
+}
 
 int Genetic::rand01()
 {
@@ -13,15 +19,24 @@ double Genetic::randab(double a, double b)
     return r;
 }
 
-void Genetic::init(int start)
+int Genetic::randab(int a, int b)
+{
+	int c,r;
+    c=b-a;
+	r=a+rand()%(c+1);
+    return r;
+}
+
+void Genetic::init()
 {
 	//初始化M个假设
 	srand(time(0));
-	for (int i=start;i<start+M;i++)
+	for (int i=0;i<M;i++)
 	{
 		for (int j=0;j<5;j++)
 			V[i].G[j]=rand01();
 	}
+	start_id=0;
 }
 
 void Genetic::encoding()
@@ -31,8 +46,9 @@ void Genetic::encoding()
 
 int Genetic::decoding(int i)
 {
-	int sum;
+	int sum=0;
 	for (int j=0;j<5;j++) sum+=V[i].G[j]<<j;
+	return sum;
 }
 
 void Genetic::evalueFitness(int start)
@@ -41,26 +57,90 @@ void Genetic::evalueFitness(int start)
 	for (int i=start;i<start+M;i++)
 	{
 		V[i].fitness=decoding(i);
+		V[i].fitness=1/((V[i].fitness-10)*(V[i].fitness-10));      //f[x]=(x-10)^2;
 		sumfitness+=V[i].fitness;
 	}
-}
-
-void Genetic::choose_pi()
-{
-	
-}
-
-void Genetic::crossover()
-{
 
 }
 
-void Genetic::mutation()
+void Genetic::choose_pi(int start)
 {
+	srand(time(0));
+	int next=getNew(start);
 
+	for (int i=0;i<M;i++)
+	{
+		double value=randab(0.0, 1.0);
+		double temPi=0;
+		for (int j=start;j<start+M;j++)
+		{
+			if (temPi<value && value<=temPi+V[j].fitness/sumfitness) V[next++]=V[j];
+			temPi+=V[j].fitness/sumfitness;
+		}
+	}
+
+	start_id=next-M;
+}
+
+void Genetic::crossover(int start)
+{
+	srand(time(0));
+	int next=getNew(start);
+
+	for (int i=0;i<M/2;i++)
+	{
+		int father;
+		int mather;
+
+		while (true)
+		{
+			father=start+randab(0,M-1);
+			mather=start+randab(0,M-1);
+			if (father!=mather) break;
+		}
+
+		int middle=randab(0,N-1);
+		for (int j=0;j<=middle;j++)
+		{
+			V[next].G[j]=V[father].G[j];
+			V[next+1].G[j]=V[mather].G[j];
+		}
+		for (int j=middle+1;j<N;j++)
+		{
+			V[next].G[j]=V[mather].G[j];
+			V[next+1].G[j]=V[father].G[j];
+		}
+		next+=2;
+	}
+
+	start_id=next-M;
+}
+
+void Genetic::mutation(int start)
+{
+	srand(time(0));
+	int next=getNew(start);
+
+	for (int i=0;i<M;i++)
+	{
+		int id=randab(0,N-1);
+		V[next++].G[id]=!V[start++].G[id];
+	}
+
+	start_id=next-M;
 }
 
 void Genetic::GA()
 {
+	evalueFitness(start_id);
+	choose_pi(start_id);
+	crossover(start_id);
+	mutation(start_id);
+}
 
+void Genetic::printResult()
+{
+	int start=start_id;
+	for (int i=start;i<start+M;i++)
+		printf("%d\n",decoding(i));
 }
