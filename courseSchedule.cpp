@@ -7,7 +7,7 @@
 int _tmain(int argc, _TCHAR* argv[])
 {
 	Genetic p;
-	int T=10;
+	int T=100;
 
 	p.init();
 
@@ -15,10 +15,11 @@ int _tmain(int argc, _TCHAR* argv[])
 	while(T--)
 	{
 		p.GA();
-		printf("第%d次结果:\n",10-T);
-		p.printResult();
+		//printf("第%d次结果:\n",100-T);
+		//p.printResult();
 	}
-	
+	printf("第%d次结果:\n",100-T);
+	p.printResult();
 
 	system("pause");
 	return 0;

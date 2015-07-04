@@ -30,7 +30,7 @@ int Genetic::randab(int a, int b)
 void Genetic::init()
 {
 	//初始化M个假设
-	srand(time(0));
+	srand( (unsigned)time(NULL));
 	for (int i=0;i<M;i++)
 	{
 		for (int j=0;j<5;j++)
@@ -57,7 +57,7 @@ void Genetic::evalueFitness(int start)
 	for (int i=start;i<start+M;i++)
 	{
 		V[i].fitness=decoding(i);
-		V[i].fitness=1/((V[i].fitness-10)*(V[i].fitness-10));      //f[x]=(x-10)^2;
+		V[i].fitness=1/((V[i].fitness-10)*(V[i].fitness-10)+1);      //f[x]=(x-10)^2;
 		sumfitness+=V[i].fitness;
 	}
 
@@ -65,18 +65,21 @@ void Genetic::evalueFitness(int start)
 
 void Genetic::choose_pi(int start)
 {
-	srand(time(0));
+	//srand((int)time(0));
+	//srand( (unsigned)time(NULL));
 	int next=getNew(start);
 
 	for (int i=0;i<M;i++)
 	{
 		double value=randab(0.0, 1.0);
+		//printf("%f\n",value);
 		double temPi=0;
 		for (int j=start;j<start+M;j++)
 		{
-			if (temPi<value && value<=temPi+V[j].fitness/sumfitness) V[next++]=V[j];
-			temPi+=V[j].fitness/sumfitness;
+			if (temPi<value && value<=temPi+V[j].fitness/sumfitness) { /*printf("%d %f %f\n",j,value, temPi);*/V[next++]=V[j];}
+			temPi+=(V[j].fitness/sumfitness);
 		}
+		//printf("%lf   %lf\n",temPi,sumfitness);
 	}
 
 	start_id=next-M;
@@ -84,7 +87,7 @@ void Genetic::choose_pi(int start)
 
 void Genetic::crossover(int start)
 {
-	srand(time(0));
+	//srand(time(0));
 	int next=getNew(start);
 
 	for (int i=0;i<M/2;i++)
@@ -118,11 +121,21 @@ void Genetic::crossover(int start)
 
 void Genetic::mutation(int start)
 {
-	srand(time(0));
+	//srand(time(0));
 	int next=getNew(start);
 
 	for (int i=0;i<M;i++)
 	{
+		V[next]=V[start];
+
+		double mutate=randab(0.0,1.0);
+		if (mutate>pm)
+		{
+			next++;
+			start++;
+			continue;
+		}
+
 		int id=randab(0,N-1);
 		V[next++].G[id]=!V[start++].G[id];
 	}
